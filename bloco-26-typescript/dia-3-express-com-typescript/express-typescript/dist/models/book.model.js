@@ -1,4 +1,5 @@
 "use strict";
+// ./models/book.model.ts
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -9,14 +10,14 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-class UserModel {
+class BookModel {
     constructor(connection) {
         this.connection = connection;
     }
     getAll() {
         return __awaiter(this, void 0, void 0, function* () {
             const result = yield this.connection
-                .execute(`SELECT * FROM Users`);
+                .execute('SELECT * FROM books');
             const [rows] = result;
             return rows;
         });
@@ -24,32 +25,20 @@ class UserModel {
     getById(id) {
         return __awaiter(this, void 0, void 0, function* () {
             const result = yield this.connection
-                .execute(`SELECT * FROM Users WHERE id = ?`, [id]);
+                .execute('SELECT * FROM books WHERE id=?', [id]);
             const [rows] = result;
-            const [user] = rows;
-            return user;
+            const [book] = rows;
+            return book;
         });
     }
-    create(user) {
+    create(book) {
         return __awaiter(this, void 0, void 0, function* () {
-            const { name, email, password } = user;
-            const result = yield this.connection.execute(`INSERT INTO Users (name, email, password) VALUES (?, ?, ?)`, [name, email, password]);
+            const { title, price, author, isbn } = book;
+            const result = yield this.connection.execute('INSERT INTO books (title, price, author, isbn) VALUES (?, ?, ?, ?)', [title, price, author, isbn]);
             const [dataInserted] = result;
             const { insertId } = dataInserted;
-            return Object.assign({ id: insertId }, user);
-        });
-    }
-    update(id, user) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const { name, email, password } = user;
-            const result = yield this.connection.execute(`UPDATE Users SET name = ?, email = ?, password = ? WHERE id = ?`, [name, email, password, id]);
-            return result;
-        });
-    }
-    delete(id) {
-        return __awaiter(this, void 0, void 0, function* () {
-            yield this.connection.execute(`DELETE FROM Users WHERE id = ?`, [id]);
+            return Object.assign({ id: insertId }, book);
         });
     }
 }
-exports.default = UserModel;
+exports.default = BookModel;

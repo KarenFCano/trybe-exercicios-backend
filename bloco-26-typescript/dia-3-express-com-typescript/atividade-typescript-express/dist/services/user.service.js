@@ -8,48 +8,55 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-class UserModel {
-    constructor(connection) {
-        this.connection = connection;
+const connection_1 = __importDefault(require("../models/connection"));
+const user_model_1 = __importDefault(require("../models/user.model"));
+const restify_errors_1 = require("restify-errors");
+class UserService {
+    constructor() {
+        this.model = new user_model_1.default(connection_1.default);
     }
     getAll() {
         return __awaiter(this, void 0, void 0, function* () {
-            const result = yield this.connection
-                .execute(`SELECT * FROM Users`);
-            const [rows] = result;
-            return rows;
+            const users = yield this.model.getAll();
+            return users;
         });
     }
     getById(id) {
         return __awaiter(this, void 0, void 0, function* () {
-            const result = yield this.connection
-                .execute(`SELECT * FROM Users WHERE id = ?`, [id]);
-            const [rows] = result;
-            const [user] = rows;
+            const user = yield this.model.getById(id);
+            if (!user) {
+                throw new restify_errors_1.NotFoundError('User not found');
+            }
             return user;
         });
     }
     create(user) {
         return __awaiter(this, void 0, void 0, function* () {
-            const { name, email, password } = user;
-            const result = yield this.connection.execute(`INSERT INTO Users (name, email, password) VALUES (?, ?, ?)`, [name, email, password]);
-            const [dataInserted] = result;
-            const { insertId } = dataInserted;
-            return Object.assign({ id: insertId }, user);
+            return this.model.create(user);
         });
     }
     update(id, user) {
         return __awaiter(this, void 0, void 0, function* () {
-            const { name, email, password } = user;
-            const result = yield this.connection.execute(`UPDATE Users SET name = ?, email = ?, password = ? WHERE id = ?`, [name, email, password, id]);
-            return result;
+            const userFound = yield this.model.getById(id);
+            if (!userFound) {
+                throw new restify_errors_1.NotFoundError('User not found');
+            }
+            yield this.model.update(id, user);
+            return (user);
         });
     }
     delete(id) {
         return __awaiter(this, void 0, void 0, function* () {
-            yield this.connection.execute(`DELETE FROM Users WHERE id = ?`, [id]);
+            const userFound = yield this.model.getById(id);
+            if (!userFound) {
+                throw new restify_errors_1.NotFoundError('User not found');
+            }
+            yield this.model.delete(id);
         });
     }
 }
-exports.default = UserModel;
+exports.default = UserService;
